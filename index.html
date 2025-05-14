@@ -1,0 +1,119 @@
+<html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    /* === BASIC RESET === */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: transparent;
+      font-family: 'Courier New', monospace;
+      overflow: hidden;
+    }
+
+    #chat-box {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 400px;
+      max-height: 600px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      overflow-y: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 14px;
+      color: #fff;
+    }
+
+    .chat-message {
+      opacity: 1;
+      transition: opacity 1s ease-in-out;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .chat-message.fade {
+      opacity: 0.2;
+    }
+
+    .timestamp {
+      color: #aaa;
+      margin-right: 6px;
+    }
+
+    .username {
+      color: #48b0f7;
+      margin-right: 4px;
+    }
+
+    .message-text {
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat-box"></div>
+
+  <script>
+    const chatBox = document.getElementById('chat-box');
+    const MAX_MESSAGES = 20;
+
+    // Simulated test function (remove for production)
+    function simulateMessage() {
+      addMessage("StreamerFan42", "This is a test message from chat.");
+    }
+
+    function addMessage(username, text) {
+      const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const message = document.createElement('div');
+      message.classList.add('chat-message');
+
+      message.innerHTML = `
+        <span class="timestamp">[${timestamp}]</span>
+        <span class="username">${username}:</span>
+        <span class="message-text">${text}</span>
+      `;
+
+      chatBox.appendChild(message);
+
+      // Scroll to bottom
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Fade older messages
+      const allMessages = chatBox.querySelectorAll('.chat-message');
+      if (allMessages.length > MAX_MESSAGES) {
+        const msgToRemove = allMessages[0];
+        msgToRemove.remove();
+      }
+
+      allMessages.forEach((msg, index) => {
+        msg.classList.toggle('fade', index < allMessages.length - 5);
+      });
+    }
+
+    // === Streamlabs OBS chat hook ===
+    window.addEventListener('onEventReceived', function (obj) {
+      const data = obj.detail.event;
+
+      if (data && data.name === 'message') {
+        const username = data.displayName || data.name || "Anonymous";
+        const message = data.message || "";
+        addMessage(username, message);
+      }
+    });
+
+    // For local testing
+    // setInterval(simulateMessage, 3000);
+  </script>
+</body>
+</html>
